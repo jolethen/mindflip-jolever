@@ -1,3 +1,4 @@
+/* 🌌 CORE STYLES */
 body {
     margin: 0;
     font-family: sans-serif;
@@ -5,251 +6,44 @@ body {
     text-align: center;
     background: linear-gradient(#020617, #000);
     overflow: hidden;
+    height: 100vh;
 }
 
-/* 🌌 BACKGROUND */
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: -1;
+canvas { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    z-index: -1; 
 }
 
-/* MENU */
-#menu {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    z-index: 10;
-}
-
-.menu-box {
-    width: 90%;
-    max-width: 400px;
-    padding: 25px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    box-shadow: 0 0 40px rgba(56, 189, 248, 0.3);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* TITLE */
-h1 {
-    color: #38bdf8;
-    animation: glow 2s infinite;
-}
-
-@keyframes glow {
-    0% { text-shadow: 0 0 10px #38bdf8; }
-    50% { text-shadow: 0 0 30px #38bdf8; }
-    100% { text-shadow: 0 0 10px #38bdf8; }
-}
-
-/* INPUT */
-input {
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-/* BUTTON GROUP */
-.btn-group {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-group button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.btn-group button.active {
-    background: #38bdf8;
-    color: black;
-    box-shadow: 0 0 15px #38bdf8;
-}
-
-/* LEVEL GRID */
-#levels {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.level-btn {
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    cursor: pointer;
-}
-
-.level-btn.active {
-    background: #38bdf8;
-    color: black;
-    box-shadow: 0 0 10px #38bdf8;
-}
-
-/* START BUTTON */
-.start-btn {
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: #38bdf8;
-    color: black;
-    font-weight: bold;
-    box-shadow: 0 0 20px #38bdf8;
-    cursor: pointer;
-}
-
-/* GAME */
-.grid {
-    display: grid;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.card {
-    width: 70px;
-    height: 70px;
-    perspective: 1000px;
-    cursor: pointer;
-}
-
-.inner {
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transition: 0.5s;
-    position: relative;
-}
-
-.flipped .inner {
-    transform: rotateY(180deg);
-}
-
-.front, .back {
-    position: absolute;
-    width: 70px;
-    height: 70px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backface-visibility: hidden;
-}
-
-.front {
-    background: rgba(30, 41, 59, 0.8);
-}
-
-.back {
-    background: #38bdf8;
-    color: black;
-    font-size: 24px;
-    transform: rotateY(180deg);
-}
-
-/* MOBILE */
-@media(max-width: 500px) {
-    h1 { font-size: 28px; }
-  }
-
-/* ... (Keep all existing CSS from previous version) ... */
-
-/* CHANGE: Added styling for the Game Over overlay screen */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.7); /* Slightly darker background */
-    backdrop-filter: blur(12px);
-    z-index: 20; /* Ensure it sits above the game and standard menu */
-}
-
-/* Ensure existing styles apply to the new overlay elements */
-.overlay .menu-box {
-    animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ... (Remaining previous CSS remains unchanged) ... */
-/* ... (Existing styles remain unchanged) ... */
-
-body{
-    margin:0;
-    font-family:sans-serif;
-    color:white;
-    text-align:center;
-    background:linear-gradient(#020617,#000);
-    overflow:hidden;
-}
-
-canvas{ position:fixed; top:0; left:0; z-index:-1; }
-
+/* 🖥️ UI OVERLAYS (Menu & Victory) */
 #menu, .victory-overlay {
-    position:fixed;
-    width:100%;
-    height:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:rgba(0,0,0,0.7);
-    backdrop-filter:blur(15px);
+    position: fixed;
+    inset: 0; /* Shortcut for top/left/width/height 100% */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
     z-index: 100;
 }
 
 .menu-box, .victory-box {
-    width:90%;
-    max-width:400px;
-    padding:30px;
-    border-radius:25px;
-    background:rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow:0 0 50px rgba(56,189,248,0.2);
-    display:flex;
-    flex-direction:column;
-    gap:20px;
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 50px rgba(56, 189, 248, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* VICTORY SPECIFICS */
-.victory-box {
-    animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.trophy {
-    font-size: 60px;
-    animation: bounce 2s infinite;
-}
+/* 🏆 VICTORY ANIMATIONS */
+.victory-box { animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.trophy { font-size: 60px; animation: bounce 2s infinite; }
 
 @keyframes slideUp {
     from { transform: translateY(50px); opacity: 0; }
@@ -261,47 +55,50 @@ canvas{ position:fixed; top:0; left:0; z-index:-1; }
     50% { transform: translateY(-15px); }
 }
 
-h1, h2 { color:#38bdf8; animation:glow 2s infinite; }
+/* 💡 TEXT & EFFECTS */
+h1, h2 { color: #38bdf8; animation: glow 2s infinite; margin: 10px 0; }
 
-@keyframes glow{
-    0%, 100%{text-shadow:0 0 10px #38bdf8;}
-    50%{text-shadow:0 0 30px #38bdf8;}
+@keyframes glow {
+    0%, 100% { text-shadow: 0 0 10px #38bdf8; }
+    50% { text-shadow: 0 0 30px #38bdf8; }
 }
 
-/* BUTTONS & INPUTS */
+/* 🕹️ CONTROLS */
 input, .btn-group button, .level-btn {
-    padding:10px;
-    border-radius:10px;
-    border:none;
-    background:rgba(255,255,255,0.1);
-    color:white;
-    cursor:pointer;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.btn-group { display:flex; gap:10px; }
+.btn-group { display: flex; gap: 10px; }
 .btn-group button.active, .level-btn.active {
-    background:#38bdf8;
-    color:black;
-    box-shadow:0 0 15px #38bdf8;
+    background: #38bdf8;
+    color: black;
+    box-shadow: 0 0 15px #38bdf8;
 }
 
 #levels {
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:8px;
-    max-height:150px;
-    overflow-y:auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 5px;
 }
 
 .start-btn {
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    background:#38bdf8;
-    color:black;
-    font-weight:bold;
-    cursor:pointer;
-    box-shadow:0 0 20px rgba(56,189,248,0.4);
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: #38bdf8;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
     transition: 0.3s;
 }
 
@@ -316,16 +113,18 @@ input, .btn-group button, .level-btn {
     cursor: pointer;
 }
 
-/* GRID & CARDS */
-.grid { display:grid; gap:10px; justify-content:center; margin-top:20px; }
-.card { width:70px; height:70px; perspective:1000px; cursor: pointer;}
-.inner { width:100%; height:100%; transform-style:preserve-3d; transition:0.5s; position: relative;}
-.flipped .inner { transform:rotateY(180deg); }
-.front, .back {
-    position:absolute; width:100%; height:100%; border-radius:12px;
-    display:flex; align-items:center; justify-content:center; backface-visibility:hidden;
-}
-.front { background:rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); }
-.back { background:#38bdf8; color:black; transform:rotateY(180deg); font-size: 30px;}
+/* 🃏 GAME GRID & CARDS */
+.grid { display: grid; gap: 10px; justify-content: center; margin-top: 20px; }
+.card { width: 70px; height: 70px; perspective: 1000px; cursor: pointer; }
+.inner { width: 100%; height: 100%; transform-style: preserve-3d; transition: 0.5s; position: relative; }
+.flipped .inner { transform: rotateY(180deg); }
 
-@media(max-width:500px){ h1{font-size:28px;} }
+.front, .back {
+    position: absolute; width: 100%; height: 100%; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; backface-visibility: hidden;
+}
+
+.front { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); }
+.back { background: #38bdf8; color: black; transform: rotateY(180deg); font-size: 30px; }
+
+@media(max-width: 500px) { h1 { font-size: 28px; } }
