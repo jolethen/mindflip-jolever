@@ -13,27 +13,29 @@
 <div id="menu">
     <div class="menu-box">
         <h1>🧠 MindFlip</h1>
-
         <p>Mode</p>
         <div class="btn-group" id="modeSelect">
             <button class="active" onclick="selectMode('single',this)">Single</button>
             <button onclick="selectMode('multi',this)">Multi</button>
         </div>
-
         <input id="p1" placeholder="Player 1">
         <input id="p2" placeholder="Player 2">
-
         <p>Difficulty</p>
         <div class="btn-group" id="diffSelect">
             <button class="active" onclick="selectDiff(4,this)">Easy</button>
             <button onclick="selectDiff(6,this)">Medium</button>
             <button onclick="selectDiff(8,this)">Hard</button>
         </div>
-
         <p>Level</p>
         <div id="levels"></div>
-
         <button class="start-btn" onclick="startGame()">▶ Start Game</button>
+    </div>
+</div>
+
+<div id="game-over" class="overlay" style="display:none;">
+    <div class="menu-box">
+        <h1 id="winner-text">🏆 Winner: </h1>
+        <button class="start-btn" onclick="resetToMenu()">Main Menu</button>
     </div>
 </div>
 
@@ -42,7 +44,7 @@
 <div class="grid" id="grid"></div>
 
 <script>
-// 🌌 BACKGROUND
+// ... (Background and Game Data variables remain same) ...
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
 canvas.width = innerWidth;
@@ -65,9 +67,7 @@ function animateBG() {
 }
 animateBG();
 
-// 🎮 GAME DATA
 const symbols = ["🚀", "👽", "🌕", "🛸", "⭐", "🌌", "☄️", "🪐"];
-
 let cards = [], flipped = [];
 let players = ["P1", "P2"];
 let scores = [0, 0];
@@ -76,7 +76,6 @@ let mode = "single";
 let difficulty = 4;
 let selectedLevel = 0;
 
-// BUTTON LOGIC
 function selectMode(m, btn) {
     mode = m;
     document.querySelectorAll("#modeSelect button").forEach(b => b.classList.remove("active"));
@@ -89,27 +88,25 @@ function selectDiff(d, btn) {
     btn.classList.add("active");
 }
 
-// LEVEL GRID
 const levelContainer = document.getElementById("levels");
-
 for (let i = 1; i <= 40; i++) {
     let btn = document.createElement("button");
     btn.innerText = i;
     btn.className = "level-btn";
-
     btn.onclick = () => {
         selectedLevel = i - 1;
         document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
     };
-
     if (i === 1) btn.classList.add("active");
     levelContainer.appendChild(btn);
 }
 
-// START
 function startGame() {
     document.getElementById("menu").style.display = "none";
+    // CHANGE: Ensure Game Over screen is hidden when starting
+    document.getElementById("game-over").style.display = "none"; 
+    
     players[0] = document.getElementById("p1").value || "Player 1";
     players[1] = document.getElementById("p2").value || "Player 2";
     scores = [0, 0];
@@ -117,20 +114,15 @@ function startGame() {
     loadGame();
 }
 
-// LOAD GAME
 function loadGame() {
     let size = difficulty;
     if (selectedLevel > 10) size = 6;
     if (selectedLevel > 20) size = 8;
-
     document.getElementById("grid").style.gridTemplateColumns = `repeat(${size}, 70px)`;
-
     let selected = symbols.slice(0, (size * size) / 2);
     cards = [...selected, ...selected].sort(() => Math.random() - 0.5);
-
     let grid = document.getElementById("grid");
     grid.innerHTML = "";
-
     cards.forEach(sym => {
         let card = document.createElement("div");
         card.className = "card";
@@ -145,7 +137,6 @@ function loadGame() {
     updateUI();
 }
 
-// FLIP
 function flip(card, sym) {
     if (flipped.length == 2 || card.classList.contains("flipped")) return;
     card.classList.add("flipped");
@@ -155,12 +146,12 @@ function flip(card, sym) {
     }
 }
 
-// CHECK
 function check() {
     let [a, b] = flipped;
     if (a.sym === b.sym) {
         scores[turn]++;
         flipped = [];
+        // CHANGE: Checks if all cards are flipped to trigger endGame
         if (document.querySelectorAll(".flipped").length === cards.length) {
             endGame();
         }
@@ -177,15 +168,31 @@ function check() {
     updateUI();
 }
 
-// END
+// CHANGE: Rewrote endGame to update the DOM instead of using alert()
 function endGame() {
     let winner = mode === "single" ? players[0] :
         scores[0] > scores[1] ? players[0] :
         scores[1] > scores[0] ? players[1] : "Draw";
-    setTimeout(() => alert("🏆 Winner: " + winner), 300);
+
+    const gameOverEl = document.getElementById("game-over");
+    const winnerText = document.getElementById("winner-text");
+    
+    // Display the specific winner text
+    winnerText.innerText = winner === "Draw" ? "🤝 It's a Draw!" : "🏆 Winner: " + winner;
+    
+    // Show the overlay
+    gameOverEl.style.display = "flex";
 }
 
-// UI
+// CHANGE: Added helper function to return to the main menu
+function resetToMenu() {
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("menu").style.display = "flex";
+    document.getElementById("grid").innerHTML = "";
+    document.getElementById("stats").innerText = "";
+    document.getElementById("turn").innerText = "";
+}
+
 function updateUI() {
     if (mode === "multi") {
         document.getElementById("turn").innerText = players[turn] + "'s Turn";
