@@ -32,10 +32,14 @@
     </div>
 </div>
 
-<div id="game-over" class="overlay" style="display:none;">
-    <div class="menu-box">
-        <h1 id="winner-text">🏆 Winner: </h1>
-        <button class="start-btn" onclick="resetToMenu()">Main Menu</button>
+<div id="victory-screen" class="victory-overlay" style="display:none;">
+    <div class="victory-box">
+        <div class="trophy">🏆</div>
+        <h2 id="winner-display">Winner: Player 1</h2>
+        <div class="victory-btns">
+            <button class="start-btn" onclick="restartLevel()">🔄 Play Again</button>
+            <button class="secondary-btn" onclick="backToMenu()">🏠 Menu</button>
+        </div>
     </div>
 </div>
 
@@ -44,162 +48,156 @@
 <div class="grid" id="grid"></div>
 
 <script>
-// ... (Background and Game Data variables remain same) ...
-const canvas = document.getElementById("bg");
-const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+// (Background Logic remains the same)
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
 
-let stars = [];
-for (let i = 0; i < 120; i++) {
-    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+let stars=[];
+for(let i=0;i<120;i++){
+    stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height});
 }
 
-function animateBG() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stars.forEach(s => {
-        ctx.fillStyle = "white";
-        ctx.fillRect(s.x, s.y, 2, 2);
-        s.y += 0.2;
-        if (s.y > canvas.height) s.y = 0;
+function animateBG(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s=>{
+        ctx.fillStyle="white";
+        ctx.fillRect(s.x,s.y,2,2);
+        s.y+=0.2;
+        if(s.y>canvas.height)s.y=0;
     });
     requestAnimationFrame(animateBG);
 }
 animateBG();
 
-const symbols = ["🚀", "👽", "🌕", "🛸", "⭐", "🌌", "☄️", "🪐"];
-let cards = [], flipped = [];
-let players = ["P1", "P2"];
-let scores = [0, 0];
-let turn = 0;
-let mode = "single";
-let difficulty = 4;
-let selectedLevel = 0;
+// GAME DATA
+const symbols=["🚀","👽","🌕","🛸","⭐","🌌","☄️","🪐"];
+let cards=[],flipped=[];
+let players=["P1","P2"];
+let scores=[0,0];
+let turn=0;
+let mode="single";
+let difficulty=4;
+let selectedLevel=0;
 
-function selectMode(m, btn) {
-    mode = m;
-    document.querySelectorAll("#modeSelect button").forEach(b => b.classList.remove("active"));
+function selectMode(m,btn){
+    mode=m;
+    document.querySelectorAll("#modeSelect button").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
 }
 
-function selectDiff(d, btn) {
-    difficulty = d;
-    document.querySelectorAll("#diffSelect button").forEach(b => b.classList.remove("active"));
+function selectDiff(d,btn){
+    difficulty=d;
+    document.querySelectorAll("#diffSelect button").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
 }
 
-const levelContainer = document.getElementById("levels");
-for (let i = 1; i <= 40; i++) {
-    let btn = document.createElement("button");
-    btn.innerText = i;
-    btn.className = "level-btn";
-    btn.onclick = () => {
-        selectedLevel = i - 1;
-        document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
+const levelContainer=document.getElementById("levels");
+for(let i=1;i<=40;i++){
+    let btn=document.createElement("button");
+    btn.innerText=i;
+    btn.className="level-btn";
+    btn.onclick=()=>{
+        selectedLevel=i-1;
+        document.querySelectorAll(".level-btn").forEach(b=>b.classList.remove("active"));
         btn.classList.add("active");
     };
-    if (i === 1) btn.classList.add("active");
+    if(i===1) btn.classList.add("active");
     levelContainer.appendChild(btn);
 }
 
-function startGame() {
-    document.getElementById("menu").style.display = "none";
-    // CHANGE: Ensure Game Over screen is hidden when starting
-    document.getElementById("game-over").style.display = "none"; 
-    
-    players[0] = document.getElementById("p1").value || "Player 1";
-    players[1] = document.getElementById("p2").value || "Player 2";
-    scores = [0, 0];
-    turn = 0;
+function startGame(){
+    document.getElementById("menu").style.display="none";
+    document.getElementById("victory-screen").style.display="none"; // Ensure victory is hidden
+    players[0]=document.getElementById("p1").value||"Player 1";
+    players[1]=document.getElementById("p2").value||"Player 2";
+    scores=[0,0];
+    turn=0;
     loadGame();
 }
 
-function loadGame() {
-    let size = difficulty;
-    if (selectedLevel > 10) size = 6;
-    if (selectedLevel > 20) size = 8;
-    document.getElementById("grid").style.gridTemplateColumns = `repeat(${size}, 70px)`;
-    let selected = symbols.slice(0, (size * size) / 2);
-    cards = [...selected, ...selected].sort(() => Math.random() - 0.5);
-    let grid = document.getElementById("grid");
-    grid.innerHTML = "";
-    cards.forEach(sym => {
-        let card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-        <div class="inner">
-            <div class="front"></div>
-            <div class="back">${sym}</div>
-        </div>`;
-        card.onclick = () => flip(card, sym);
+function loadGame(){
+    let size=difficulty;
+    if(selectedLevel>10) size=6;
+    if(selectedLevel>20) size=8;
+    document.getElementById("grid").style.gridTemplateColumns=`repeat(${size},70px)`;
+    let selected=symbols.slice(0,(size*size)/2);
+    cards=[...selected,...selected].sort(()=>Math.random()-0.5);
+    let grid=document.getElementById("grid");
+    grid.innerHTML="";
+    cards.forEach(sym=>{
+        let card=document.createElement("div");
+        card.className="card";
+        card.innerHTML=`<div class="inner"><div class="front"></div><div class="back">${sym}</div></div>`;
+        card.onclick=()=>flip(card,sym);
         grid.appendChild(card);
     });
     updateUI();
 }
 
-function flip(card, sym) {
-    if (flipped.length == 2 || card.classList.contains("flipped")) return;
+function flip(card,sym){
+    if(flipped.length==2 || card.classList.contains("flipped")) return;
     card.classList.add("flipped");
-    flipped.push({ card, sym });
-    if (flipped.length == 2) {
-        setTimeout(check, 600);
+    flipped.push({card,sym});
+    if(flipped.length==2){
+        setTimeout(check,600);
     }
 }
 
-function check() {
-    let [a, b] = flipped;
-    if (a.sym === b.sym) {
+function check(){
+    let[a,b]=flipped;
+    if(a.sym===b.sym){
         scores[turn]++;
-        flipped = [];
-        // CHANGE: Checks if all cards are flipped to trigger endGame
-        if (document.querySelectorAll(".flipped").length === cards.length) {
+        flipped=[];
+        if(document.querySelectorAll(".flipped").length===cards.length){
             endGame();
         }
-    } else {
+    }else{
         setTimeout(() => {
             a.card.classList.remove("flipped");
             b.card.classList.remove("flipped");
+            flipped=[];
         }, 400);
-        flipped = [];
-        if (mode === "multi") {
-            turn = turn === 0 ? 1 : 0;
-        }
+        if(mode==="multi") turn = turn===0 ? 1 : 0;
     }
     updateUI();
 }
 
-// CHANGE: Rewrote endGame to update the DOM instead of using alert()
-function endGame() {
-    let winner = mode === "single" ? players[0] :
-        scores[0] > scores[1] ? players[0] :
-        scores[1] > scores[0] ? players[1] : "Draw";
+// END GAME LOGIC (Graphical replacement for alert)
+function endGame(){
+    let winner = mode==="single" ? players[0] :
+        scores[0]>scores[1]?players[0]:
+        scores[1]>scores[0]?players[1]:"Draw";
 
-    const gameOverEl = document.getElementById("game-over");
-    const winnerText = document.getElementById("winner-text");
-    
-    // Display the specific winner text
-    winnerText.innerText = winner === "Draw" ? "🤝 It's a Draw!" : "🏆 Winner: " + winner;
-    
-    // Show the overlay
-    gameOverEl.style.display = "flex";
+    setTimeout(()=>{
+        const vicScreen = document.getElementById("victory-screen");
+        const winText = document.getElementById("winner-display");
+        winText.innerText = winner === "Draw" ? "It's a Draw!" : "Winner: " + winner;
+        vicScreen.style.display = "flex"; // Show the graphical overlay
+    }, 500);
 }
 
-// CHANGE: Added helper function to return to the main menu
-function resetToMenu() {
-    document.getElementById("game-over").style.display = "none";
-    document.getElementById("menu").style.display = "flex";
-    document.getElementById("grid").innerHTML = "";
-    document.getElementById("stats").innerText = "";
-    document.getElementById("turn").innerText = "";
+function restartLevel(){
+    document.getElementById("victory-screen").style.display="none";
+    scores=[0,0];
+    turn=0;
+    loadGame();
 }
 
-function updateUI() {
-    if (mode === "multi") {
-        document.getElementById("turn").innerText = players[turn] + "'s Turn";
-        document.getElementById("stats").innerText = `${players[0]}: ${scores[0]} | ${players[1]}: ${scores[1]}`;
-    } else {
-        document.getElementById("turn").innerText = "";
-        document.getElementById("stats").innerText = `${players[0]} Score: ${scores[0]}`;
+function backToMenu(){
+    document.getElementById("victory-screen").style.display="none";
+    document.getElementById("menu").style.display="flex";
+    document.getElementById("grid").innerHTML="";
+}
+
+function updateUI(){
+    if(mode==="multi"){
+        document.getElementById("turn").innerText=players[turn]+"'s Turn";
+        document.getElementById("stats").innerText=`${players[0]}: ${scores[0]} | ${players[1]}: ${scores[1]}`;
+    }else{
+        document.getElementById("turn").innerText="";
+        document.getElementById("stats").innerText=`${players[0]} Score: ${scores[0]}`;
     }
 }
 </script>
