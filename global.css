@@ -174,3 +174,32 @@ input {
 @media(max-width: 500px) {
     h1 { font-size: 28px; }
   }
+
+/* ... (Keep all existing CSS from previous version) ... */
+
+/* CHANGE: Added styling for the Game Over overlay screen */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7); /* Slightly darker background */
+    backdrop-filter: blur(12px);
+    z-index: 20; /* Ensure it sits above the game and standard menu */
+}
+
+/* Ensure existing styles apply to the new overlay elements */
+.overlay .menu-box {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ... (Remaining previous CSS remains unchanged) ... */
