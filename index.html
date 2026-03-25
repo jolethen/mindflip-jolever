@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MindFlip</title>
+    <title>MindFlip | Space Memory</title>
     <link rel="stylesheet" href="global.css">
 </head>
 <body>
@@ -13,7 +13,8 @@
 <div id="menu">
     <div class="menu-box">
         <h1>🧠 MindFlip</h1>
-        <p>Mode</p>
+        
+        <p>Game Mode</p>
         <div class="btn-group" id="modeSelect">
             <button class="active" onclick="selectMode('single',this)">Single</button>
             <button onclick="selectMode('multi',this)">Multi</button>
@@ -29,20 +30,22 @@
             <button onclick="selectDiff(8,this)">Hard</button>
         </div>
         
-        <p>Level</p>
+        <p>Select Level</p>
         <div id="levels"></div>
-        <button class="start-btn" onclick="startGame()">▶ Start Game</button>
+        
+        <button class="start-btn" onclick="startGame()">▶ Start Mission</button>
     </div>
 </div>
 
 <div id="victory-screen" class="victory-overlay" style="display:none;">
     <div class="victory-box">
         <div class="trophy">🏆</div>
-        <h2 id="winner-display">Winner: Player 1</h2>
-        <div id="record-msg" style="color:#facc15; font-weight:bold; margin-bottom:10px;"></div>
+        <h2 id="winner-display">Winner!</h2>
+        <div id="record-msg" style="color:#facc15; font-weight:bold; margin-bottom:10px; font-size:1.1rem;"></div>
+        
         <div class="victory-btns">
             <button class="start-btn" onclick="restartLevel()">🔄 Play Again</button>
-            <button class="secondary-btn" onclick="backToMenu()">🏠 Menu</button>
+            <button class="secondary-btn" onclick="backToMenu()">🏠 Main Menu</button>
         </div>
     </div>
 </div>
@@ -52,7 +55,7 @@
 <div class="grid" id="grid"></div>
 
 <script>
-/** 🌌 BACKGROUND LOGIC **/
+/** 🌌 BACKGROUND ANIMATION **/
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
 let stars = [];
@@ -62,14 +65,18 @@ function initBG() {
     canvas.height = window.innerHeight;
     stars = [];
     for(let i=0; i<120; i++){
-        stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size: Math.random()*2});
+        stars.push({
+            x: Math.random() * canvas.width, 
+            y: Math.random() * canvas.height, 
+            size: Math.random() * 2
+        });
     }
 }
 
 function animateBG(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = "white";
-    stars.forEach(s=>{
+    stars.forEach(s => {
         ctx.fillRect(s.x, s.y, s.size, s.size);
         s.y += 0.2;
         if(s.y > canvas.height) s.y = 0;
@@ -80,7 +87,7 @@ initBG();
 animateBG();
 window.addEventListener('resize', initBG);
 
-/** 🎮 GAME DATA & STATE **/
+/** 🎮 GAME STATE & CONFIG **/
 const symbols = ["🚀","👽","🌕","🛸","⭐","🌌","☄️","🪐","🤖","📡","🛰️","🔭"];
 let cards=[], flipped=[];
 let players=["P1","P2"];
@@ -89,61 +96,68 @@ let turn=0;
 let mode="single";
 let difficulty=4;
 let selectedLevel=1;
-let lockBoard = false; // Prevents clicking more than 2 cards during animation
+let lockBoard = false; // Prevents "fast-click" bugs
 
-// Toggle Mode & Player 2 Visibility
-function selectMode(m,btn){
-    mode=m;
-    document.querySelectorAll("#modeSelect button").forEach(b=>b.classList.remove("active"));
+// Toggle Mode (Single vs Multi)
+function selectMode(m, btn){
+    mode = m;
+    document.querySelectorAll("#modeSelect button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
+    // Show/Hide P2 input based on mode
     document.getElementById("p2").style.display = (m === 'multi') ? "block" : "none";
 }
 
-function selectDiff(d,btn){
-    difficulty=d;
-    document.querySelectorAll("#diffSelect button").forEach(b=>b.classList.remove("active"));
+// Set Difficulty
+function selectDiff(d, btn){
+    difficulty = d;
+    document.querySelectorAll("#diffSelect button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
 }
 
-// LEVEL GRID SETUP
+// Generate 40 Levels
 const levelContainer = document.getElementById("levels");
 for(let i=1; i<=40; i++){
     let btn = document.createElement("button");
     btn.innerText = i;
-    btn.className = "level-btn";
+    btn.className = "level-btn" + (i === 1 ? " active" : "");
     btn.onclick = () => {
         selectedLevel = i;
-        document.querySelectorAll(".level-btn").forEach(b=>b.classList.remove("active"));
+        document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
     };
-    if(i===1) btn.classList.add("active");
     levelContainer.appendChild(btn);
 }
 
+/** 🕹️ GAME ENGINE **/
 function startGame(){
-    document.getElementById("menu").style.display="none";
-    document.getElementById("victory-screen").style.display="none";
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("victory-screen").style.display = "none";
+    
+    // Set Player Names
     players[0] = document.getElementById("p1").value || "Player 1";
     players[1] = document.getElementById("p2").value || "Player 2";
-    scores = [0,0];
+    
+    scores = [0, 0];
     turn = 0;
     loadGame();
 }
 
 function loadGame(){
     let size = difficulty;
-    // Difficulty progression logic
+    // Automatic difficulty scaling based on level progress
     if(selectedLevel > 10 && size < 6) size = 6;
     if(selectedLevel > 20 && size < 8) size = 8;
 
-    // Use responsive units instead of fixed 70px in JS
-    document.getElementById("grid").style.gridTemplateColumns = `repeat(${size}, min(70px, 18vw))`;
+    // Use responsive grid sizing (70px max, 18% of screen min)
+    const grid = document.getElementById("grid");
+    grid.style.gridTemplateColumns = `repeat(${size}, min(70px, 18vw))`;
 
     let pairCount = (size * size) / 2;
     let selectedSymbols = symbols.slice(0, pairCount);
+    
+    // Shuffle cards
     cards = [...selectedSymbols, ...selectedSymbols].sort(() => Math.random() - 0.5);
 
-    let grid = document.getElementById("grid");
     grid.innerHTML = "";
     cards.forEach(sym => {
         let card = document.createElement("div");
@@ -155,7 +169,6 @@ function loadGame(){
     updateUI();
 }
 
-/** 🕹️ GAMEPLAY LOGIC **/
 function flip(card, sym){
     if(lockBoard || card.classList.contains("flipped")) return;
 
@@ -163,17 +176,18 @@ function flip(card, sym){
     flipped.push({card, sym});
 
     if(flipped.length === 2){
-        lockBoard = true; // Lock clicking while checking
-        setTimeout(check, 600);
+        lockBoard = true; 
+        setTimeout(checkMatch, 600);
     }
 }
 
-function check(){
+function checkMatch(){
     let [a, b] = flipped;
     if(a.sym === b.sym){
         scores[turn]++;
         flipped = [];
         lockBoard = false;
+        // Check for Win Condition
         if(document.querySelectorAll(".flipped").length === cards.length) endGame();
     } else {
         setTimeout(() => {
@@ -188,9 +202,9 @@ function check(){
     updateUI();
 }
 
-/** 📈 HIGH SCORE & UI **/
+/** 📈 DATA PERSISTENCE (Local Storage) **/
 function getHighScoreKey() {
-    return `best_score_diff${difficulty}_lvl${selectedLevel}`;
+    return `mindflip_score_d${difficulty}_l${selectedLevel}`;
 }
 
 function endGame(){
@@ -198,7 +212,7 @@ function endGame(){
         scores[0] > scores[1] ? players[0] :
         scores[1] > scores[0] ? players[1] : "Draw";
 
-    // High Score Persistence
+    // Track High Scores in Single Player
     let isNewRecord = false;
     if(mode === "single"){
         let key = getHighScoreKey();
@@ -221,15 +235,15 @@ function endGame(){
 }
 
 function restartLevel(){
-    document.getElementById("victory-screen").style.display="none";
-    scores = [0,0];
+    document.getElementById("victory-screen").style.display = "none";
+    scores = [0, 0];
     turn = 0;
     loadGame();
 }
 
 function backToMenu(){
-    document.getElementById("victory-screen").style.display="none";
-    document.getElementById("menu").style.display="flex";
+    document.getElementById("victory-screen").style.display = "none";
+    document.getElementById("menu").style.display = "flex";
     document.getElementById("grid").innerHTML = "";
     document.getElementById("stats").innerHTML = "";
 }
@@ -244,9 +258,9 @@ function updateUI(){
     } else {
         let best = localStorage.getItem(getHighScoreKey()) || 0;
         turnDiv.innerText = "";
-        stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.5; font-size:0.9rem; margin-left:10px;">Best: ${best}</span>`;
+        stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.4; font-size:0.85rem; margin-left:12px;">Best: ${best}</span>`;
     }
 }
 </script>
 </body>
-</html>
+    </html>
