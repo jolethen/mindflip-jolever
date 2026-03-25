@@ -1,5 +1,5 @@
 /** * 🌌 MINDFLIP CORE ENGINE
- * Optimized for: GitHub Pages & Mobile Touch
+ * Optimized for: GitHub Pages & Mobile Touch Performance
  */
 
 // --- GLOBAL STATE ---
@@ -11,7 +11,7 @@ let turn = 0;
 let mode = "single";
 let difficulty = 4;
 let selectedLevel = 1;
-let lockBoard = false; // Prevents clicking more than 2 cards during animations
+let lockBoard = false; // Guard against rapid-tapping bugs
 
 // --- 🌌 BACKGROUND ANIMATION ---
 const canvas = document.getElementById("bg");
@@ -39,30 +39,29 @@ function animateBG() {
     requestAnimationFrame(animateBG);
 }
 
-// Initial setup
+// Initialize stars and handle window resizing
 initBG();
 animateBG();
 window.addEventListener('resize', initBG);
 
 // --- 🛠️ MENU & SETUP LOGIC ---
 
-// Mode Selection (Single vs Multi)
+// Globalize functions so HTML onclicks can find them
 window.selectMode = (m, btn) => {
     mode = m;
     document.querySelectorAll("#modeSelect button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    // Show Player 2 input only in Multi mode
+    // Show P2 input only when in Multiplayer mode
     document.getElementById("p2").style.display = (m === 'multi') ? "block" : "none";
 };
 
-// Difficulty Selection
 window.selectDiff = (d, btn) => {
     difficulty = d;
     document.querySelectorAll("#diffSelect button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
 };
 
-// Level Grid Generation (1-40)
+// Generate Level Grid (1-40)
 const levelContainer = document.getElementById("levels");
 for (let i = 1; i <= 40; i++) {
     let btn = document.createElement("button");
@@ -82,29 +81,31 @@ window.startGame = () => {
     document.getElementById("menu").style.display = "none";
     document.getElementById("victory-screen").style.display = "none";
     
-    // Set names or defaults
+    // Assign names or fallback to defaults
     players[0] = document.getElementById("p1").value || "Player 1";
     players[1] = document.getElementById("p2").value || "Player 2";
     
     scores = [0, 0];
     turn = 0;
+    flipped = [];
+    lockBoard = false;
     loadGame();
 };
 
 function loadGame() {
     let size = difficulty;
-    // Scale difficulty based on level milestones
+    // Scaled difficulty logic based on selected level
     if (selectedLevel > 10 && size < 6) size = 6;
     if (selectedLevel > 20 && size < 8) size = 8;
 
     const grid = document.getElementById("grid");
-    // Dynamic CSS grid columns based on size
+    // min(70px, 18vw) ensures the grid never overflows mobile screens
     grid.style.gridTemplateColumns = `repeat(${size}, min(70px, 18vw))`;
 
     const pairCount = (size * size) / 2;
     const selectedSymbols = symbols.slice(0, pairCount);
     
-    // Create card deck and shuffle
+    // Create card deck and shuffle using Fisher-Yates or simple sort
     cards = [...selectedSymbols, ...selectedSymbols].sort(() => Math.random() - 0.5);
 
     grid.innerHTML = "";
@@ -119,13 +120,14 @@ function loadGame() {
 }
 
 function flip(card, sym) {
+    // Basic validation to prevent double-clicking or clicking while board is locked
     if (lockBoard || card.classList.contains("flipped")) return;
 
     card.classList.add("flipped");
     flipped.push({ card, sym });
 
     if (flipped.length === 2) {
-        lockBoard = true; // Stop user from clicking more cards
+        lockBoard = true; 
         setTimeout(checkMatch, 600);
     }
 }
@@ -136,12 +138,12 @@ function checkMatch() {
         scores[turn]++;
         flipped = [];
         lockBoard = false;
-        // Check if game is over
+        // Check for Win: Do all cards have the 'flipped' class?
         if (document.querySelectorAll(".flipped").length === cards.length) {
             endGame();
         }
     } else {
-        // No match: Flip back after short delay
+        // No match: Reveal for a moment then flip back
         setTimeout(() => {
             a.card.classList.remove("flipped");
             b.card.classList.remove("flipped");
@@ -165,7 +167,7 @@ function endGame() {
         scores[0] > scores[1] ? players[0] :
         scores[1] > scores[0] ? players[1] : "Draw";
 
-    // Check LocalStorage for new record
+    // Single player high score check via LocalStorage
     let isNewRecord = false;
     if (mode === "single") {
         const key = getHighScoreKey();
@@ -176,13 +178,13 @@ function endGame() {
         }
     }
 
-    // Graphical Victory Reveal
+    // Delay showing victory screen so the last card animation can finish
     setTimeout(() => {
         const vicScreen = document.getElementById("victory-screen");
         const winText = document.getElementById("winner-display");
         const recordMsg = document.getElementById("record-msg");
         
-        winText.innerText = winner === "Draw" ? "It's a Draw!" : "🏆 " + winner + " Wins!";
+        winText.innerText = winner === "Draw" ? "🤝 It's a Draw!" : "🏆 " + winner + " Wins!";
         recordMsg.innerText = isNewRecord ? "⭐ NEW PERSONAL BEST! ⭐" : "";
         vicScreen.style.display = "flex";
     }, 500);
@@ -192,6 +194,8 @@ window.restartLevel = () => {
     document.getElementById("victory-screen").style.display = "none";
     scores = [0, 0];
     turn = 0;
+    flipped = [];
+    lockBoard = false;
     loadGame();
 };
 
@@ -199,6 +203,7 @@ window.backToMenu = () => {
     document.getElementById("victory-screen").style.display = "none";
     document.getElementById("menu").style.display = "flex";
     document.getElementById("grid").innerHTML = "";
+    document.getElementById("stats").innerHTML = "";
 };
 
 function updateUI() {
@@ -211,6 +216,6 @@ function updateUI() {
     } else {
         const best = localStorage.getItem(getHighScoreKey()) || 0;
         turnDiv.innerText = "";
-        stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.5; font-size:0.8rem; margin-left:10px;">Best: ${best}</span>`;
+        stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.4; font-size:0.85rem; margin-left:12px;">Best: ${best}</span>`;
     }
-      }
+        }
