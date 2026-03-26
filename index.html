@@ -6,10 +6,10 @@
     <title>MindFlip | Space Memory</title>
     <link rel="stylesheet" href="global.css">
 
-    <link rel="preload" href="assets/flip.mp3" as="audio">
-    <link rel="preload" href="assets/match.mp3" as="audio">
-    <link rel="preload" href="assets/wrong.mp3" as="audio">
-    <link rel="preload" href="assets/win.mp3" as="audio">
+    <link rel="preload" href="assets/flip.wav" as="audio">
+    <link rel="preload" href="assets/match.wav" as="audio">
+    <link rel="preload" href="assets/wrong.wav" as="audio">
+    <link rel="preload" href="assets/win.wav" as="audio">
 </head>
 <body>
 
@@ -103,17 +103,17 @@ let difficulty=4;
 let selectedLevel=1;
 let lockBoard = false;
 
-// 🔊 2. AUDIO ENGINE CONFIG
+// 🔊 Corrected Audio Paths to .wav
 const sounds = {
-    flip: new Audio('./assets/flip.mp3'),
-    match: new Audio('./assets/match.mp3'),
-    wrong: new Audio('./assets/wrong.mp3'),
-    win: new Audio('./assets/win.mp3')
+    flip: new Audio('./assets/flip.wav'),
+    match: new Audio('./assets/match.wav'),
+    wrong: new Audio('./assets/wrong.wav'),
+    win: new Audio('./assets/win.wav')
 };
 
 function playSound(name) {
     if (sounds[name]) {
-        sounds[name].currentTime = 0; // Allows sound to overlap/restart quickly
+        sounds[name].currentTime = 0; 
         sounds[name].play().catch(e => console.log("Sound check:", e.message));
     }
 }
@@ -146,7 +146,7 @@ for(let i=1; i<=40; i++){
 
 /** 🕹️ GAME ENGINE **/
 function startGame(){
-    // 🔊 3. UNLOCK AUDIO (Required for Mobile)
+    // 🔊 UNLOCK AUDIO
     Object.values(sounds).forEach(s => {
         s.load();
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
@@ -187,7 +187,7 @@ function loadGame(){
 function flip(card, sym){
     if(lockBoard || card.classList.contains("flipped")) return;
 
-    playSound('flip'); // 🔊 Trigger flip sound
+    playSound('flip'); 
     card.classList.add("flipped");
     flipped.push({card, sym});
 
@@ -200,13 +200,13 @@ function flip(card, sym){
 function checkMatch(){
     let [a, b] = flipped;
     if(a.sym === b.sym){
-        playSound('match'); // 🔊 Trigger match sound
+        playSound('match'); 
         scores[turn]++;
         flipped = [];
         lockBoard = false;
         if(document.querySelectorAll(".flipped").length === cards.length) endGame();
     } else {
-        playSound('wrong'); // 🔊 Trigger wrong sound
+        playSound('wrong'); 
         setTimeout(() => {
             a.card.classList.remove("flipped");
             b.card.classList.remove("flipped");
@@ -224,7 +224,7 @@ function getHighScoreKey() {
 }
 
 function endGame(){
-    playSound('win'); // 🔊 Trigger victory sound
+    playSound('win'); 
     let winner = mode === "single" ? players[0] :
         scores[0] > scores[1] ? players[0] :
         scores[1] > scores[0] ? players[1] : "Draw";
