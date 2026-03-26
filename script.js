@@ -1,5 +1,5 @@
 /** * 🌌 MINDFLIP CORE ENGINE
- * Asset-Based Sound Version (MP3) - FIXED PATHS
+ * Personalized & Fixed WAV Sound Version
  */
 
 // --- GLOBAL STATE ---
@@ -13,19 +13,19 @@ let difficulty = 4;
 let selectedLevel = 1;
 let lockBoard = false;
 
-// --- 🔊 MP3 SOUND ENGINE ---
-// Paths updated to look inside your 'assets' folder
+// --- 🔊 WAV SOUND ENGINE ---
+// Updated to .wav to match your renamed assets
 const sounds = {
-    flip: new Audio('./assets/flip.mp3'),
-    match: new Audio('./assets/match.mp3'),
-    wrong: new Audio('./assets/wrong.mp3'),
-    win: new Audio('./assets/win.mp3')
+    flip: new Audio('./assets/flip.wav'),
+    match: new Audio('./assets/match.wav'),
+    wrong: new Audio('./assets/wrong.wav'),
+    win: new Audio('./assets/win.wav')
 };
 
 function playSound(name) {
     if (sounds[name]) {
-        sounds[name].currentTime = 0; // Reset to start for rapid clicks
-        sounds[name].play().catch(e => console.log("Audio waiting for interaction..."));
+        sounds[name].currentTime = 0; 
+        sounds[name].play().catch(e => console.log("Audio interaction required"));
     }
 }
 
@@ -80,15 +80,16 @@ for (let i = 1; i <= 40; i++) {
         selectedLevel = i;
         document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
+        updateUI(); // Show high score for selected level immediately
     };
     levelContainer.appendChild(btn);
 }
 
 // --- 🎮 GAME CORE ---
 window.startGame = () => {
-    // 🔓 MOBILE SOUND UNLOCK & PRELOAD
+    // 🔓 MOBILE SOUND UNLOCK
     Object.values(sounds).forEach(s => {
-        s.load(); // Ensure file is loading
+        s.load();
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
     });
 
@@ -161,20 +162,24 @@ function checkMatch() {
     updateUI();
 }
 
+// 🧠 PERSONALIZATION: Persistence Logic
 function getHighScoreKey() {
     return `mindflip_best_d${difficulty}_l${selectedLevel}`;
 }
 
 function endGame() {
     playSound('win'); 
-    let winner = mode === "single" ? players[0] :
+    let winnerName = mode === "single" ? players[0] :
         scores[0] > scores[1] ? players[0] :
         scores[1] > scores[0] ? players[1] : "Draw";
 
     let isNewRecord = false;
     if (mode === "single") {
         const key = getHighScoreKey();
-        const prevBest = localStorage.getItem(key) || 0;
+        const prevBest = parseInt(localStorage.getItem(key)) || 0;
+        
+        // In memory games, we usually track "Least Moves" or "Score"
+        // Since your UI shows "Score", we treat higher as better
         if (scores[0] > prevBest) {
             localStorage.setItem(key, scores[0]);
             isNewRecord = true;
@@ -182,7 +187,7 @@ function endGame() {
     }
 
     setTimeout(() => {
-        document.getElementById("winner-display").innerText = winner === "Draw" ? "🤝 Draw!" : "🏆 " + winner + "!";
+        document.getElementById("winner-display").innerText = winnerName === "Draw" ? "🤝 Draw!" : "🏆 " + winnerName + "!";
         document.getElementById("record-msg").innerText = isNewRecord ? "⭐ NEW RECORD ⭐" : "";
         document.getElementById("victory-screen").style.display = "flex";
     }, 500);
@@ -206,12 +211,13 @@ window.backToMenu = () => {
 function updateUI() {
     const stats = document.getElementById("stats");
     const turnDiv = document.getElementById("turn");
+    const bestScore = localStorage.getItem(getHighScoreKey()) || 0;
+
     if (mode === "multi") {
         turnDiv.innerText = `${players[turn]}'s Turn`;
         stats.innerText = `${players[0]}: ${scores[0]} | ${players[1]}: ${scores[1]}`;
     } else {
-        const best = localStorage.getItem(getHighScoreKey()) || 0;
         turnDiv.innerText = "";
-        stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.4; font-size:0.85rem; margin-left:10px;">Best: ${best}</span>`;
+        stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.4; font-size:0.85rem; margin-left:10px;">Best: ${bestScore}</span>`;
     }
-        }
+}
