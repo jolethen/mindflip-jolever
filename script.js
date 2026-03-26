@@ -1,5 +1,5 @@
 /** * 🌌 MINDFLIP CORE ENGINE
- * Asset-Based Sound Version (MP3)
+ * Asset-Based Sound Version (MP3) - FIXED PATHS
  */
 
 // --- GLOBAL STATE ---
@@ -14,13 +14,12 @@ let selectedLevel = 1;
 let lockBoard = false;
 
 // --- 🔊 MP3 SOUND ENGINE ---
-// Assumes files are in the same folder as script.js or in an /assets folder.
-// If you put them in a folder, change the paths below to 'assets/flip.mp3', etc.
+// Paths updated to look inside your 'assets' folder
 const sounds = {
-    flip: new Audio('flip.mp3'),
-    match: new Audio('match.mp3'),
-    wrong: new Audio('wrong.mp3'),
-    win: new Audio('win.mp3')
+    flip: new Audio('./assets/flip.mp3'),
+    match: new Audio('./assets/match.mp3'),
+    wrong: new Audio('./assets/wrong.mp3'),
+    win: new Audio('./assets/win.mp3')
 };
 
 function playSound(name) {
@@ -87,9 +86,9 @@ for (let i = 1; i <= 40; i++) {
 
 // --- 🎮 GAME CORE ---
 window.startGame = () => {
-    // 🔓 MOBILE SOUND UNLOCK
-    // We play and immediately pause all sounds to "prime" the browser
+    // 🔓 MOBILE SOUND UNLOCK & PRELOAD
     Object.values(sounds).forEach(s => {
+        s.load(); // Ensure file is loading
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
     });
 
@@ -130,7 +129,7 @@ function loadGame() {
 function flip(card, sym) {
     if (lockBoard || card.classList.contains("flipped")) return;
     
-    playSound('flip'); // 🔊 Play MP3
+    playSound('flip'); 
     card.classList.add("flipped");
     flipped.push({ card, sym });
 
@@ -143,13 +142,13 @@ function flip(card, sym) {
 function checkMatch() {
     const [a, b] = flipped;
     if (a.sym === b.sym) {
-        playSound('match'); // 🔊 Play MP3
+        playSound('match'); 
         scores[turn]++;
         flipped = [];
         lockBoard = false;
         if (document.querySelectorAll(".flipped").length === cards.length) endGame();
     } else {
-        playSound('wrong'); // 🔊 Play MP3
+        playSound('wrong'); 
         setTimeout(() => {
             a.card.classList.remove("flipped");
             b.card.classList.remove("flipped");
@@ -167,7 +166,7 @@ function getHighScoreKey() {
 }
 
 function endGame() {
-    playSound('win'); // 🔊 Play MP3
+    playSound('win'); 
     let winner = mode === "single" ? players[0] :
         scores[0] > scores[1] ? players[0] :
         scores[1] > scores[0] ? players[1] : "Draw";
@@ -215,4 +214,4 @@ function updateUI() {
         turnDiv.innerText = "";
         stats.innerHTML = `Score: ${scores[0]} <span style="opacity:0.4; font-size:0.85rem; margin-left:10px;">Best: ${best}</span>`;
     }
-                     }
+        }
